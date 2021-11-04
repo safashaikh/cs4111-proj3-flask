@@ -1,8 +1,8 @@
-import pymysql
+import os
+from sqlalchemy import *
+from sqlalchemy.pool import NullPool
 import json
 import logging
-
-import middleware.context as context
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -10,30 +10,29 @@ logger.setLevel(logging.INFO)
 
 
 def _get_db_connection():
+    uri = os.environ.get("DBURI")
+    engine = create_engine(uri)
 
-    db_connect_info = context.get_db_info()
+    try:
+        conn = engine.connect()
+    except:
+        raise RuntimeError("Cannot connect to database.")
 
-    logger.info("RDBService._get_db_connection:")
-    logger.info("\t HOST = " + db_connect_info['host'])
-
-    db_info = context.get_db_info()
-    db_connection = pymysql.connect(
-       **db_info
-    )
-    return db_connection
+    return conn
 
 
 def get_by_prefix(db_schema, table_name, column_name, value_prefix):
 
     conn = _get_db_connection()
-    cur = conn.cursor()
+    #cur = conn.cursor()
 
     sql = "select * from " + db_schema + "." + table_name + " where " + \
         column_name + " like " + "'" + value_prefix + "%'"
-    print("SQL Statement = " + cur.mogrify(sql, None))
+    print("SQL Statement = " + sql)
 
-    res = cur.execute(sql)
-    res = cur.fetchall()
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    print(len(res))
 
     conn.close()
 
@@ -65,10 +64,9 @@ def find_by_template(db_schema, table_name, template, field_list):
     wc, args = _get_where_clause_args(template)
 
     conn = _get_db_connection()
-    cur = conn.cursor()
 
     sql = "select * from " + db_schema + "." + table_name + " " + wc
-    res = cur.execute(sql, args=args)
+    cur = conn.execute(text(sql), args=args)
     res = cur.fetchall()
 
     conn.close()

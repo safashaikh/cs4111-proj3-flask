@@ -42,6 +42,7 @@ def index():
 
 @app.route('/users', methods=["GET", "POST"])
 def get_users():
+    # customers
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
@@ -65,6 +66,8 @@ def get_users():
 
 @app.route('/users/<userID>', methods=["GET", "PUT", "DELETE"])
 def get_users_by_userID(userID):
+    #TODO change to customer/<cid>
+    # show orders made by customer
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
@@ -195,12 +198,62 @@ def get_users_by_address(addressID):
 
     return rsp
 
+@app.route('/products', methods=["GET", "POST"])
+def get_addresses():
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = ProductResource.get_by_template(None)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        elif input.method == "POST":
+            data = input.data
+            res = ProductResource.add_by_template(data)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/users', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+@app.route('/products/<pid>', methods=["GET", "PUT", "DELETE"])
+def get_address_by_pid(pid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = ProductResource.get_by_template({'pid': pid})
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        elif input.method == "PUT":
+            data = input.data
+            res = ProductResource.update_by_template(data, {'pid': pid})
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        elif input.method == "DELETE":
+            res = ProductResource.delete_by_template({'pid': pid})
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/products/<pid>', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
 
 @app.route('/<db_schema>/<table_name>/<column_name>/<prefix>', methods=["GET", "POST"])
 def get_by_prefix(db_schema, table_name, column_name, prefix):
     res = d_service.get_by_prefix(db_schema, table_name, column_name, prefix)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
+
+
 
 
 if __name__ == '__main__':

@@ -20,6 +20,16 @@ def _get_db_connection():
 
     return conn
 
+def _to_dict(keys, data):
+    res = []
+    for d in data:
+        obj = {}
+        for i, key in enumerate(keys):
+            obj[key] = d[i]
+        res.append(obj)
+    
+    return res
+
 
 def get_by_prefix(db_schema, table_name, column_name, value_prefix):
 
@@ -32,11 +42,12 @@ def get_by_prefix(db_schema, table_name, column_name, value_prefix):
 
     cursor = conn.execute(text(sql))
     res = cursor.fetchall()
-    print(len(res))
+    keys = cursor.keys()
+    keys = list(keys)
 
     conn.close()
 
-    return res
+    return _to_dict(keys, res)
 
 
 def _get_where_clause_args(template):
@@ -59,19 +70,21 @@ def _get_where_clause_args(template):
     return clause, args
 
 
-def find_by_template(db_schema, table_name, template, field_list):
+def find_by_template(db_schema, table_name, template):
 
     wc, args = _get_where_clause_args(template)
 
     conn = _get_db_connection()
 
     sql = "select * from " + db_schema + "." + table_name + " " + wc
-    cur = conn.execute(text(sql), args=args)
-    res = cur.fetchall()
+    cursor = conn.execute(text(sql), args=args)
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
 
     conn.close()
 
-    return res
+    return _to_dict(keys, res)
 
 
 def add_by_template(db_schema, table_name, template):

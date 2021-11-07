@@ -9,13 +9,13 @@ class UserResource(BaseApplicationResource):
 
     @classmethod
     def get_by_template(cls, template):
-        users = d_service.find_by_template("bs3363", "customers", template, None)
-        new_users = []
+        users = d_service.find_by_template("bs3363", "customers", template)
+        '''new_users = []
         for user in users:
             user['links'] = [
                 {
                     "rel": "self",
-                    "href": f"/users/{user['ID']}"
+                    "href": f"/users/{user['cid']}"
                 }
             ]
             if user['addressID'] is not None:
@@ -25,10 +25,10 @@ class UserResource(BaseApplicationResource):
                         "href": f"/address/{user['addressID']}"
                     }
                 )
-
             new_users.append(user)
+        '''
 
-        return new_users
+        return users #new_users
 
     @classmethod
     def get_by_prefix(cls, prefix):

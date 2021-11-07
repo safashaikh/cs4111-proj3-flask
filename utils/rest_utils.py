@@ -66,12 +66,12 @@ class RESTContext:
 
         try:
             if request.data is not None:
-                data = request.json
+                self.data = request.json
             else:
-                data = None
+                self.data = None
         except Exception as e:
             # This would fail the request in a more real solution.
-            data = "You sent something but I could not get JSON out of it."
+            self.data = "You sent something but I could not get JSON out of it."
 
             log_message = str(datetime.now()) + ": Method " + self.method
 

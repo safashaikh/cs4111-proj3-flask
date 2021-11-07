@@ -1,7 +1,7 @@
 import os
 from flask import Flask, Response, request, render_template, redirect, url_for
 from flask_dance.contrib.google import make_google_blueprint, google
-import database_services.RDBService as d_service
+import database_services.RDBService as db_service
 from flask_cors import CORS
 import json
 
@@ -15,6 +15,7 @@ logger.setLevel(logging.INFO)
 
 from application_services.UsersResource.user_service import UserResource
 from application_services.AddressResource.address_service import AddressResource
+from application_services.ProductResource.product_service import ProductResource
 
 
 
@@ -37,7 +38,11 @@ def index():
         return redirect(url_for("google.login"))
     resp = google.get("/oauth2/v1/userinfo")
     assert resp.ok, resp.text
-    return "You are {email} on Google".format(email=resp.json()["emails"][0]["value"])
+    print(resp.json())
+    #TODO find person in db, if not, create user
+    # then redirect to
+    # return redirect("localhost:4200/customers/<id>")
+    return resp.json()
 
 
 @app.route('/users', methods=["GET", "POST"])
@@ -66,8 +71,6 @@ def get_users():
 
 @app.route('/users/<userID>', methods=["GET", "PUT", "DELETE"])
 def get_users_by_userID(userID):
-    #TODO change to customer/<cid>
-    # show orders made by customer
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
@@ -91,7 +94,6 @@ def get_users_by_userID(userID):
         rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
 
     return rsp
-
 
 @app.route('/users/<userID>/address', methods=["GET", "POST"])
 def get_address_by_userID(userID):
@@ -199,12 +201,13 @@ def get_users_by_address(addressID):
     return rsp
 
 @app.route('/products', methods=["GET", "POST"])
-def get_addresses():
+def get_products():
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = ProductResource.get_by_template(None)
+            res = ProductResource.get_by_template({})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+            print(rsp)
 
         elif input.method == "POST":
             data = input.data
@@ -221,7 +224,7 @@ def get_addresses():
     return rsp
 
 @app.route('/products/<pid>', methods=["GET", "PUT", "DELETE"])
-def get_address_by_pid(pid):
+def get_product_by_pid(pid):
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
@@ -246,10 +249,44 @@ def get_address_by_pid(pid):
 
     return rsp
 
+@app.route('/products/<pid>/vendors', methods=["GET"])
+def getProductVendors(pid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = ProductResource.get_vendors(pid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/products/<pid>', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+@app.route('/vendors', methods=["GET"])
+def getVendors():
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = db_service.find_by_template("bs3363","vendors",{})
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+            print(rsp)
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/users', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
 
 @app.route('/<db_schema>/<table_name>/<column_name>/<prefix>', methods=["GET", "POST"])
 def get_by_prefix(db_schema, table_name, column_name, prefix):
-    res = d_service.get_by_prefix(db_schema, table_name, column_name, prefix)
+    res = db_service.get_by_prefix(db_schema, table_name, column_name, prefix)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 

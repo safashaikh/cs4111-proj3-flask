@@ -86,6 +86,18 @@ def find_by_template(db_schema, table_name, template):
 
     return _to_dict(keys, res)
 
+def get_product_vendors(pid):
+    conn = _get_db_connection()
+    print("GETTING PROD VENDORS")
+    sql = f"SELECT v.vid, v.name, v.email, v.phone FROM Vendors v, Sells s WHERE s.vendor = v.vid AND s.product={pid}"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
 
 def add_by_template(db_schema, table_name, template):
     columns = template.keys()

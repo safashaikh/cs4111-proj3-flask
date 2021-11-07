@@ -17,7 +17,8 @@ from application_services.UsersResource.user_service import UserResource
 from application_services.AddressResource.address_service import AddressResource
 from application_services.ProductResource.product_service import ProductResource
 from application_services.VendorResource.vendor_service import VendorResource
-
+from application_services.OrdersResource.orders_service import OrderResource
+from application_services.Metrics.metrics_service import MetricsResource
 
 
 app = Flask(__name__)
@@ -204,7 +205,10 @@ def get_user_order(cid):
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = UserResource.get_orders(cid)
+            count = request.args.get('count')
+            if not count:
+                count = 10
+            res = UserResource.get_orders(cid, count)
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         else:
@@ -212,6 +216,141 @@ def get_user_order(cid):
 
     except Exception as e:
         print(f"Path: '/user/<cid>/orders', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+
+@app.route('/orders/<oid>/shipment', methods=["GET"])
+def get_order_shipment(oid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = OrderResource.get_shipment(oid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/orders/<oid>/shipment', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+
+@app.route('/orders/<oid>/address', methods=["GET"])
+def get_order_address(oid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = OrderResource.get_address(oid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/orders/<oid>/address', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+
+@app.route('/orders/<oid>/card', methods=["GET"])
+def get_order_card(oid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = OrderResource.get_card(oid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/orders/<oid>/card', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+
+@app.route('/orders/<oid>/itemorders', methods=["GET"])
+def get_order_items(oid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = OrderResource.get_items(oid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/orders/<oid>/items', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+
+@app.route('/metrics/most_purchased', methods=["GET"])
+def get_most_purchases_items():
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            count = request.args.get('count')
+            if not count:
+                count = 10
+            res = MetricsResource.get_most_ordered_items(count)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: 'metrics/most_purchased', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+
+@app.route('/metrics/popular_vendors', methods=["GET"])
+def get_popular_vendors():
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            count = request.args.get('count')
+            if not count:
+                count = 10
+            res = MetricsResource.get_most_popular_vendors(count)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/metrics/popular_vendors', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+
+@app.route('/metrics/most_liked', methods=["GET"])
+def get_most_liked():
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            count = request.args.get('count')
+            if not count:
+                count = 10
+            res = MetricsResource.get_most_liked_items(count)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/metrics/most_liked', Error: {e}")
         rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
 
     return rsp

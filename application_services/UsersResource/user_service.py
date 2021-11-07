@@ -36,6 +36,6 @@ class UserResource(BaseApplicationResource):
         return res
 
     @classmethod
-    def get_orders(cls, cid):
-        res = d_service.get_user_orders(cid)
+    def get_orders(cls, cid, count):
+        res = d_service.get_user_orders(cid, count)
         return res

@@ -2,7 +2,7 @@ from application_services.BaseApplicationResource import BaseApplicationResource
 import database_services.RDBService as d_service
 
 
-class VendorResource(BaseApplicationResource):
+class OrderResource(BaseApplicationResource):
 
     def __init__(self):
         super().__init__()
@@ -29,4 +29,27 @@ class VendorResource(BaseApplicationResource):
     @classmethod
     def delete_by_template(cls, template):
         res = d_service.delete_by_template("bs3363", "orders", template)
+        return res
+
+
+    @classmethod
+    def get_shipment(cls, oid):
+        res = d_service.get_order_shipment(oid)
+        return res
+
+
+    @classmethod
+    def get_address(cls, oid):
+        res = d_service.get_order_address(oid)
+        return res
+
+
+    @classmethod
+    def get_card(cls, oid):
+        res = d_service.get_order_card(oid)
+        return res
+
+    @classmethod
+    def get_items(cls, oid):
+        res = d_service.get_order_items(oid)
         return res

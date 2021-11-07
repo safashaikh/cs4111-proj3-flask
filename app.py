@@ -16,6 +16,7 @@ logger.setLevel(logging.INFO)
 from application_services.UsersResource.user_service import UserResource
 from application_services.AddressResource.address_service import AddressResource
 from application_services.ProductResource.product_service import ProductResource
+from application_services.VendorResource.vendor_service import VendorResource
 
 
 
@@ -51,7 +52,7 @@ def get_users():
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = UserResource.get_by_template(None)
+            res = UserResource.get_by_template({})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "POST":
@@ -74,16 +75,16 @@ def get_users_by_userID(userID):
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = UserResource.get_by_template({'ID': userID})
+            res = UserResource.get_by_template({'cid': userID})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "PUT":
             data = input.data
-            res = UserResource.update_by_template(data, {'ID': userID})
+            res = UserResource.update_by_template(data, {'cid': userID})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "DELETE":
-            res = UserResource.delete_by_template({'ID': userID})
+            res = UserResource.delete_by_template({'cid': userID})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         else:
@@ -91,111 +92,6 @@ def get_users_by_userID(userID):
 
     except Exception as e:
         print(f"Path: '/users/<userID>', Error: {e}")
-        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
-
-    return rsp
-
-@app.route('/users/<userID>/address', methods=["GET", "POST"])
-def get_address_by_userID(userID):
-    try:
-        input = rest_utils.RESTContext(request)
-        if input.method == "GET":
-            res = AddressResource.get_by_template({'ID': userID})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-        elif input.method == "POST":
-            data = input.data
-            insert_id = AddressResource.add_by_template(data)
-            res = UserResource.update_by_template({'addressID': insert_id}, {'ID': userID})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-        else:
-            rsp = Response("Method not implemented", status=501)
-
-    except Exception as e:
-        print(f"Path: '/users/<userID>/address', Error: {e}")
-        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
-
-    return rsp
-
-
-@app.route('/addresses', methods=["GET", "POST"])
-def get_addresses():
-    try:
-        input = rest_utils.RESTContext(request)
-        if input.method == "GET":
-            res = AddressResource.get_by_template(None)
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-        elif input.method == "POST":
-            # userID must be present in the POST body,
-            # otherwise there's no entry in the Users table
-            data = input.data
-            if 'userID' in data and data['userID']:
-                userID = data['userID']
-                del data['userID']
-                insert_id = AddressResource.add_by_template(data)
-                res = UserResource.update_by_template({'addressID': insert_id}, {'ID': userID})
-                rsp = Response(json.dumps(insert_id, default=str), status=200, content_type="application/json")
-
-            else:
-                rsp = Response("POST body does not contain 'userID' field")
-
-        else:
-            rsp = Response("Method not implemented", status=501)
-
-    except Exception as e:
-        print(f"Path: '/addresses', Error: {e}")
-        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
-
-    return rsp
-
-@app.route('/addresses/<addressID>', methods=["GET", "PUT", "DELETE"])
-def get_address_by_addressID(addressID):
-    try:
-        input = rest_utils.RESTContext(request)
-        if input.method == "GET":
-            res = AddressResource.get_by_template({'ID': addressID})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-        elif input.method == "PUT":
-            data = input.data
-            res = AddressResource.update_by_template(data, {'ID': addressID})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-        elif input.method == "DELETE":
-            res = AddressResource.delete_by_template({'ID': addressID})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-        else:
-            rsp = Response("Method not implemented", status=501)
-
-    except Exception as e:
-        print(f"Path: '/address/<addressID>', Error: {e}")
-        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
-
-    return rsp
-
-
-@app.route('/addresses/<addressID>/users', methods=["GET", "POST"])
-def get_users_by_address(addressID):
-    try:
-        input = rest_utils.RESTContext(request)
-        if input.method == "GET":
-            res = UserResource.get_by_template({'addressID': addressID})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-        elif input.method == "POST":
-            data = input.data
-            data['addressID'] = addressID
-            res = UserResource.add_by_template(data)
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
-        else:
-            rsp = Response("Method not implemented", status=501)
-
-    except Exception as e:
-        print(f"Path: '/addresses/<addressID>/users', Error: {e}")
         rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
 
     return rsp
@@ -218,7 +114,7 @@ def get_products():
             rsp = Response("Method not implemented", status=501)
 
     except Exception as e:
-        print(f"Path: '/users', Error: {e}")
+        print(f"Path: '/products', Error: {e}")
         rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
 
     return rsp
@@ -250,7 +146,7 @@ def get_product_by_pid(pid):
     return rsp
 
 @app.route('/products/<pid>/vendors', methods=["GET"])
-def getProductVendors(pid):
+def get_product_vendors(pid):
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
@@ -261,17 +157,17 @@ def getProductVendors(pid):
             rsp = Response("Method not implemented", status=501)
 
     except Exception as e:
-        print(f"Path: '/products/<pid>', Error: {e}")
+        print(f"Path: '/products/<pid>/vendors', Error: {e}")
         rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
 
     return rsp
 
 @app.route('/vendors', methods=["GET"])
-def getVendors():
+def get_vendors():
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = db_service.find_by_template("bs3363","vendors",{})
+            res = VendorResource.get_by_template({})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
             print(rsp)
 
@@ -279,10 +175,47 @@ def getVendors():
             rsp = Response("Method not implemented", status=501)
 
     except Exception as e:
-        print(f"Path: '/users', Error: {e}")
+        print(f"Path: '/vendors', Error: {e}")
         rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
 
     return rsp
+
+
+@app.route('/vendors/<vid>/products', methods=["GET"])
+def get_vendor_products(vid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = VendorResource.get_products(vid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/vendors/<vid>/products', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
+
+@app.route('/users/<cid>/orders', methods=["GET"])
+def get_user_order(cid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = UserResource.get_orders(cid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/user/<cid>/orders', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
 
 @app.route('/<db_schema>/<table_name>/<column_name>/<prefix>', methods=["GET", "POST"])
 def get_by_prefix(db_schema, table_name, column_name, prefix):
@@ -291,7 +224,5 @@ def get_by_prefix(db_schema, table_name, column_name, prefix):
     return rsp
 
 
-
-
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=4000)

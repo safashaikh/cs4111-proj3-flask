@@ -86,18 +86,6 @@ def find_by_template(db_schema, table_name, template):
 
     return _to_dict(keys, res)
 
-def get_product_vendors(pid):
-    conn = _get_db_connection()
-    print("GETTING PROD VENDORS")
-    sql = f"SELECT v.vid, v.name, v.email, v.phone FROM Vendors v, Sells s WHERE s.vendor = v.vid AND s.product={pid}"
-    cursor = conn.execute(text(sql))
-    res = cursor.fetchall()
-    keys = cursor.keys()
-    keys = list(keys)
-
-    conn.close()
-
-    return _to_dict(keys, res)
 
 def add_by_template(db_schema, table_name, template):
     columns = template.keys()
@@ -175,3 +163,52 @@ def delete_by_template(db_schema, table_name, template):
     conn.commit()
     conn.close()
     return res
+
+
+def get_product_vendors(pid):
+    conn = _get_db_connection()
+    print("GETTING PROD VENDORS")
+    sql = f"SELECT v.vid, v.name, v.email, v.phone FROM Vendors v, Sells s WHERE s.vendor = v.vid AND s.product={pid}"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_vendor_products(vid):
+    conn = _get_db_connection()
+    print("GETTING VENDOR PRODUCTS")
+    sql = f"SELECT p.pid, p.name, p.manufacturer FROM Products p, Sells s WHERE s.vendor = {vid} AND p.pid=s.product"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_user_orders(cid):
+    conn = _get_db_connection()
+    print("GETTING VENDOR PRODUCTS")
+    sql = f"WITH order_items AS (" \
+            f"SELECT i.“order”, i.quantity, p.name, s.price, s.price * i.quantity AS item_total " \
+            f"FROM itemorders i, sells s, products p " \
+            f"WHERE i.product = s.product AND i.vendor=s.vendor AND i.product = p.pid) " \
+          f"SELECT o.oid, o.odate, o.discount, o.tax, SUM(oi.item_total) AS subtotal, (1.0 + o.tax) * (SUM(oi.item_total)  * (1.0-o.discount)) AS total " \
+          f"FROM Customers c, Orders o, order_items oi " \
+          f"WHERE c.cid = {cid} AND o.customer=c.cid AND oi.“order” = o.oid " \
+          f"GROUP BY o.oid;"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)

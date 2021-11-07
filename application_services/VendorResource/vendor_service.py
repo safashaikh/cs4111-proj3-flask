@@ -2,40 +2,37 @@ from application_services.BaseApplicationResource import BaseApplicationResource
 import database_services.RDBService as d_service
 
 
-class UserResource(BaseApplicationResource):
+class VendorResource(BaseApplicationResource):
 
     def __init__(self):
         super().__init__()
 
     @classmethod
     def get_by_template(cls, template):
-        users = d_service.find_by_template("bs3363", "customers", template)
-        return users #new_users
-
-    @classmethod
-    def get_by_prefix(cls, prefix):
-        res = d_service.get_by_prefix("bs3363", "customers", "username", prefix)
+        res = d_service.find_by_template("bs3363", "vendors", template)
         return res
+
 
     @classmethod
     def add_by_template(cls, template):
-        res = d_service.add_by_template("bs3363", "customers", template)
+        res = d_service.add_by_template("bs3363", "vendors", template)
         return res
 
 
     @classmethod
     def update_by_template(cls, update_template, where_template):
-        res = d_service.update_by_template("bs3363", "customers",
+        res = d_service.update_by_template("bs3363", "vendors",
                                            update_template, where_template)
         return res
 
 
     @classmethod
     def delete_by_template(cls, template):
-        res = d_service.delete_by_template("bs3363", "customers", template)
+        res = d_service.delete_by_template("bs3363", "vendors", template)
         return res
 
+
     @classmethod
-    def get_orders(cls, cid):
-        res = d_service.get_user_orders(cid)
+    def get_products(cls, vid):
+        res = d_service.get_vendor_products(vid)
         return res

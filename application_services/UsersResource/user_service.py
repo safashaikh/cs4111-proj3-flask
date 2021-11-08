@@ -10,24 +10,6 @@ class UserResource(BaseApplicationResource):
     @classmethod
     def get_by_template(cls, template):
         users = d_service.find_by_template("bs3363", "customers", template)
-        '''new_users = []
-        for user in users:
-            user['links'] = [
-                {
-                    "rel": "self",
-                    "href": f"/users/{user['cid']}"
-                }
-            ]
-            if user['addressID'] is not None:
-                user['links'].append(
-                    {
-                        "rel": "address",
-                        "href": f"/address/{user['addressID']}"
-                    }
-                )
-            new_users.append(user)
-        '''
-
         return users #new_users
 
     @classmethod
@@ -52,3 +34,16 @@ class UserResource(BaseApplicationResource):
     def delete_by_template(cls, template):
         res = d_service.delete_by_template("bs3363", "customers", template)
         return res
+
+    @classmethod
+    def get_orders(cls, cid, count):
+        res = d_service.get_user_orders(cid, count)
+        return res
+
+    @classmethod
+    def auth(cls, username, password):
+        all_users = UserResource.get_by_template({})
+        for user in all_users:
+            if username in user.values():
+                return password == user['password']
+        return False

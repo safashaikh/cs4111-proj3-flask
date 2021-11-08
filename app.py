@@ -42,7 +42,7 @@ def index():
     #TODO find person in db, if not, create user
     # then redirect to
     # return redirect("localhost:4200/customers/<id>")
-    return resp.json()
+    return redirect("http://localhost:4200")
 
 
 @app.route('/users', methods=["GET", "POST"])
@@ -71,19 +71,20 @@ def get_users():
 
 @app.route('/users/<userID>', methods=["GET", "PUT", "DELETE"])
 def get_users_by_userID(userID):
+    print(userID)
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = UserResource.get_by_template({'ID': userID})
+            res = UserResource.get_by_template({'cid': userID})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "PUT":
             data = input.data
-            res = UserResource.update_by_template(data, {'ID': userID})
+            res = UserResource.update_by_template(data, {'cid': userID})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "DELETE":
-            res = UserResource.delete_by_template({'ID': userID})
+            res = UserResource.delete_by_template({'cid': userID})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         else:

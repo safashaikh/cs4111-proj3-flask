@@ -53,31 +53,31 @@ def get_by_prefix(db_schema, table_name, column_name, value_prefix):
 def _get_where_clause_args(template):
 
     terms = []
-    args = []
+    
     clause = None
 
     if template is None or template == {}:
         clause = ""
-        args = None
+
     else:
         for k, v in template.items():
-            terms.append(k + "=%s")
-            args.append(v)
+            terms.append(f'{k}={v}')
+            #args.append(v)
 
         clause = " where " + " AND ".join(terms)
 
 
-    return clause, args
+    return clause
 
 
 def find_by_template(db_schema, table_name, template):
 
-    wc, args = _get_where_clause_args(template)
+    wc = _get_where_clause_args(template)
 
     conn = _get_db_connection()
 
     sql = "select * from " + db_schema + "." + table_name + " " + wc
-    cursor = conn.execute(text(sql), args=args)
+    cursor = conn.execute(text(sql))
     res = cursor.fetchall()
     keys = cursor.keys()
     keys = list(keys)

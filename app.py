@@ -60,6 +60,15 @@ def login():
         rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
 
     return rsp
+    '''if not google.authorized:
+        return redirect(url_for("google.login"))
+    resp = google.get("/oauth2/v1/userinfo")
+    assert resp.ok, resp.text
+    print(resp.json())
+    #TODO find person in db, if not, create user
+    # then redirect to
+    # return redirect("localhost:4200/customers/<id>")
+    return redirect("http://localhost:4200")'''
 
 
 @app.route('/users', methods=["GET", "POST"])
@@ -88,6 +97,7 @@ def get_users():
 
 @app.route('/users/<userID>', methods=["GET", "PUT", "DELETE"])
 def get_users_by_userID(userID):
+    print(userID)
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":

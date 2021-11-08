@@ -39,3 +39,11 @@ class UserResource(BaseApplicationResource):
     def get_orders(cls, cid, count):
         res = d_service.get_user_orders(cid, count)
         return res
+
+    @classmethod
+    def auth(cls, username, password):
+        all_users = UserResource.get_by_template({})
+        for user in all_users:
+            if username in user.values():
+                return password == user['password']
+        return False

@@ -14,7 +14,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 from application_services.UsersResource.user_service import UserResource
-from application_services.AddressResource.address_service import AddressResource
 from application_services.ProductResource.product_service import ProductResource
 from application_services.VendorResource.vendor_service import VendorResource
 from application_services.OrdersResource.orders_service import OrderResource
@@ -24,27 +23,43 @@ from application_services.Metrics.metrics_service import MetricsResource
 app = Flask(__name__)
 CORS(app)
 
-blueprint = make_google_blueprint(
-    client_id=os.environ.get("OAUTH_ID", None),
-    client_secret=os.environ.get("OAUTH_SECRET", None),
-    scope=["profile", "email"],
-    reprompt_consent=True
-)
-
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
-app.register_blueprint(blueprint, url_prefix="/userlogin")
+
 
 @app.route("/")
 def index():
-    if not google.authorized:
-        return redirect(url_for("google.login"))
-    resp = google.get("/oauth2/v1/userinfo")
-    assert resp.ok, resp.text
-    print(resp.json())
-    #TODO find person in db, if not, create user
-    # then redirect to
-    # return redirect("localhost:4200/customers/<id>")
-    return resp.json()
+    """This will render our frontend application. This means that the index.html after the Angular build will need to be
+    placed in the ./templates folder. All other contents of the build will be placed in the ./static folder.
+    When building the angular app, make sure to run ng build --prod --build-optimizer --baseHref=”/static/ so that
+    the references are handled correctly.
+    """
+    return render_template('index.html')  # Return index.html
+
+
+@app.route("/login", methods=["GET"])
+def login():
+    """
+    This is a very minimal login. Based on the query params, we just check in the username/pw combo is present in the
+    DB and return either 200 or 403.
+    """
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            username = request.args.get('username')
+            password = request.args.get('password')
+            authenticated = UserResource.auth(username, password)
+            if authenticated:
+                return Response("Logged in", status=200)
+            else:
+                return Response("Failed to authenticate", status=403)
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/login', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
 
 
 @app.route('/users', methods=["GET", "POST"])
@@ -364,4 +379,4 @@ def get_by_prefix(db_schema, table_name, column_name, prefix):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=4000)
+    app.run(host="0.0.0.0", port=4000, debug=True) # debug=False sets the app to production mode for deployment

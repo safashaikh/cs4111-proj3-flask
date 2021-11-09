@@ -18,8 +18,8 @@ class OrderResource(BaseApplicationResource):
         return res
 
     @classmethod
-    def get_orders(cls, count, oid):
-        res = d_service.get_orders(count, oid)
+    def get_orders(cls, count, like):
+        res = d_service.get_orders(count, like)
         return res
 
     @classmethod

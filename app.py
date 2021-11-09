@@ -267,14 +267,12 @@ def get_orders():
         if input.method == "GET":
             oid = request.args.get('oid')
             count = request.args.get('count')
+            if not count:
+                count = 10
             if not oid:
-                if not count:
-                    count = 100
-                res = OrderResource.get_orders(count, "")
-                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-            else:
-                res = OrderResource.get_by_template({'oid': oid})
-                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+                oid = ""
+            res = OrderResource.get_orders(count, oid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "PUT":
             data = input.data

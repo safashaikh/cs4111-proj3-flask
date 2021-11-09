@@ -433,4 +433,4 @@ def get_by_prefix(db_schema, table_name, column_name, prefix):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True) # debug=False sets the app to production mode for deployment
+    app.run(host="0.0.0.0", port=8111, debug=True) # debug=False sets the app to production mode for deployment

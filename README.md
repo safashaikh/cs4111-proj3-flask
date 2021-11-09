@@ -17,8 +17,7 @@ for users to view the E-Commerce system. Think of it as an admin portal for user
 E-Commerce activity. 
 
 Some of the features implemented:
- - User login 
- - Users can view their personal details
+ - Users can view their personal details and update them as well.
  - Users can view their orders and details such as total paid, taxes, etc.
  - Users can view the items associated with each order
  - Users can view where their orders will be shipped to and by whom
@@ -29,5 +28,12 @@ Some of the features implemented:
     - Most frequently bought product
     - Most liked product (determined by # of cart adds)
     
-## Interesting Pages
-TODO
+## Interesting Features
+ - Search bars on every page to search items. For example, for products you can search by name and for orders you can search by order id.
+ - Orders are displayed relative to a customer and displays orders from most recent to oldest.
+ - You can click on an order to see what items were purchased, in what quantity, and with what card payment was made and the shipment ID and shipper
+ - User details can be modified with an easy to use form and save button
+
+## Hosting
+URL = 'http://127.0.0.1:8111'
+

@@ -137,6 +137,7 @@ def get_products():
                 rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
             else:
                 res = ProductResource.get_by_prefix(name)
+                print(res)
                 rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "PUT":
@@ -259,6 +260,35 @@ def get_user_order(cid):
 
     return rsp
 
+@app.route('/orders', methods=['GET', 'POST'])
+def get_orders():
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            oid = request.args.get('oid')
+            count = request.args.get('count')
+            if not oid:
+                if not count:
+                    count = 100
+                res = OrderResource.get_orders(count, "")
+                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+            else:
+                res = OrderResource.get_by_template({'oid': oid})
+                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        elif input.method == "PUT":
+            data = input.data
+            res = OrderResource.add_by_template(data)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/users', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
 
 @app.route('/orders/<oid>/shipment', methods=["GET"])
 def get_order_shipment(oid):

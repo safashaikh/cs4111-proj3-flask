@@ -37,7 +37,7 @@ def get_by_prefix(db_schema, table_name, column_name, value_prefix):
     #cur = conn.cursor()
 
     sql = "select * from " + db_schema + "." + table_name + " where " + \
-        "LOWER( " + column_name + " )" + " like " + "'" + value_prefix + "%'"
+        " " + column_name + " " + " like " + "'%" + value_prefix + "%'"
     print("SQL Statement = " + sql)
 
     cursor = conn.execute(text(sql))
@@ -191,9 +191,32 @@ def get_user_orders(cid, count, like):
             f"SELECT i.“order”, i.quantity, p.name, s.price, s.price * i.quantity AS item_total " \
             f"FROM itemorders i, sells s, products p " \
             f"WHERE i.product = s.product AND i.vendor=s.vendor AND i.product = p.pid) " \
-          f"SELECT o.oid, o.odate, o.discount, o.tax, SUM(oi.item_total) AS subtotal, (1.0 + o.tax) * (SUM(oi.item_total)  * (1.0-o.discount)) AS total " \
+          f"SELECT o.oid, o.odate, o.discount, o.tax, SUM(oi.item_total) AS subtotal, (1.0 + o.tax) * (SUM(oi.item_total)  * (1.0-o.discount)) AS total, o.customer, o.card, o.address " \
           f"FROM Customers c, Orders o, order_items oi " \
           f"WHERE c.cid = {cid} AND o.customer=c.cid AND oi.“order” = o.oid " \
+          f"AND CAST( o.oid AS TEXT ) LIKE '{like}%' " \
+          f"GROUP BY o.oid, o.odate " \
+          f"ORDER BY o.odate DESC " \
+          f"LIMIT {count}"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+def get_orders(count, like):
+    conn = _get_db_connection()
+    print("GETTING USER ORDERS")
+    sql = f"WITH order_items AS (" \
+            f"SELECT i.“order”, i.quantity, p.name, s.price, s.price * i.quantity AS item_total " \
+            f"FROM itemorders i, sells s, products p " \
+            f"WHERE i.product = s.product AND i.vendor=s.vendor AND i.product = p.pid) " \
+          f"SELECT o.oid, o.odate, o.discount, o.tax, SUM(oi.item_total) AS subtotal, (1.0 + o.tax) * (SUM(oi.item_total)  * (1.0-o.discount)) AS total, o.customer, o.card, o.address " \
+          f"FROM Customers c, Orders o, order_items oi " \
+          f"WHERE oi.“order” = o.oid " \
           f"AND CAST( o.oid AS TEXT ) LIKE '{like}%' " \
           f"GROUP BY o.oid, o.odate " \
           f"ORDER BY o.odate DESC " \

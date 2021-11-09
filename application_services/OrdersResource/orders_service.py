@@ -12,6 +12,15 @@ class OrderResource(BaseApplicationResource):
         res = d_service.find_by_template("bs3363", "orders", template)
         return res
 
+    @classmethod
+    def get_by_prefix(cls, prefix, column = 'card'):
+        res = d_service.get_by_prefix("bs3363", "orders", column, prefix)
+        return res
+
+    @classmethod
+    def get_orders(cls, count, oid):
+        res = d_service.get_orders(count, oid)
+        return res
 
     @classmethod
     def add_by_template(cls, template):

@@ -100,11 +100,9 @@ def add_by_template(db_schema, table_name, template):
     values_string = ", ".join(values_string)
 
     conn = _get_db_connection()
-    cur = conn.cursor()
-
     sql = f"insert into {db_schema}.{table_name} ({columns_string})" \
           f" values ({values_string});"
-    res = cur.execute(sql)
+    res = conn.execute(sql)
     id = conn.insert_id()
     conn.commit()
     conn.close()
@@ -132,13 +130,10 @@ def update_by_template(db_schema, table_name, update_template, where_template):
     where_string = ', '.join(where_list)
 
     conn = _get_db_connection()
-    cur = conn.cursor()
-
     sql = f"UPDATE {db_schema}.{table_name} SET {update_string} WHERE {where_string};"
-    res = cur.execute(sql)
-    conn.commit()
+    res = conn.execute(sql)
     conn.close()
-    return res
+    return update_template
 
 
 def delete_by_template(db_schema, table_name, template):
@@ -154,10 +149,7 @@ def delete_by_template(db_schema, table_name, template):
     cur = conn.cursor()
 
     sql1 = f"DELETE FROM {db_schema}.{table_name} where {where_string};"
-    # sql2 = "SELECT row_count() as no_of_rows_deleted;"
     cur.execute(sql1)
-    # cur.execute(sql2)
-    # res = cur.fetchone()
     res = cur.rowcount
     conn.commit()
     conn.close()
@@ -282,10 +274,10 @@ def get_order_items(oid):
 def get_most_ordered_items(count):
     conn = _get_db_connection()
     print("GETTING MOST POPULAR ORDERS")
-    sql = f"SELECT name, SUM(itemorders.quantity) AS amount " \
+    sql = f"SELECT products.pid, name, SUM(itemorders.quantity) AS amount " \
           f"FROM products, itemorders " \
           f"WHERE products.pid = itemorders.product " \
-          f"GROUP BY products.name " \
+          f"GROUP BY products.pid, products.name " \
           f"ORDER BY amount DESC " \
           f"LIMIT {count}"
     cursor = conn.execute(text(sql))
@@ -300,11 +292,11 @@ def get_most_ordered_items(count):
 
 def get_most_popular_vendors(count):
     conn = _get_db_connection()
-    print("GETTING MOST POPULAR ORDERS")
-    sql = f"SELECT v.name, COUNT(v.name) AS num_purchases " \
+    print("GETTING MOST POPULAR VENDORS")
+    sql = f"SELECT v.vid, v.name, COUNT(v.name) AS num_purchases " \
           f"FROM Vendors v, Sells s, Itemorders i " \
           f"WHERE v.vid = s.vendor AND i.product = s.product AND i.vendor = s.vendor " \
-          f"GROUP BY v.name ORDER BY numpurchases DESC " \
+          f"GROUP BY v.vid, v.name ORDER BY num_purchases DESC " \
           f"LIMIT {count}"
 
     cursor = conn.execute(text(sql))
@@ -320,11 +312,184 @@ def get_most_popular_vendors(count):
 def get_most_liked_items(count):
     conn = _get_db_connection()
     print("GETTING MOST POPULAR ORDERS")
-    sql = f"SELECT p.name, COUNT(p.pid) AS quantity " \
+    sql = f"SELECT p.pid, p.name, COUNT(p.pid) AS amount " \
           f"FROM products p, cartadds c " \
           f"WHERE p.pid = c.product " \
           f"GROUP BY p.pid " \
-          f"ORDER BY quantity DESC " \
+          f"ORDER BY amount DESC " \
+          f"LIMIT {count}"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_product_vendors(pid):
+    conn = _get_db_connection()
+    print("GETTING PROD VENDORS")
+    sql = f"SELECT v.vid, v.name, v.email, v.phone FROM Vendors v, Sells s WHERE s.vendor = v.vid AND s.product={pid}"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_vendor_products(vid):
+    conn = _get_db_connection()
+    print("GETTING VENDOR PRODUCTS")
+    sql = f"SELECT p.pid, p.name, p.manufacturer FROM Products p, Sells s WHERE s.vendor = {vid} AND p.pid=s.product"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_user_orders(cid, count):
+    conn = _get_db_connection()
+    print("GETTING USER ORDERS")
+    sql = f"WITH order_items AS (" \
+            f"SELECT i.“order”, i.quantity, p.name, s.price, s.price * i.quantity AS item_total " \
+            f"FROM itemorders i, sells s, products p " \
+            f"WHERE i.product = s.product AND i.vendor=s.vendor AND i.product = p.pid) " \
+          f"SELECT o.oid, o.odate, o.discount, o.tax, SUM(oi.item_total) AS subtotal, (1.0 + o.tax) * (SUM(oi.item_total)  * (1.0-o.discount)) AS total " \
+          f"FROM Customers c, Orders o, order_items oi " \
+          f"WHERE c.cid = {cid} AND o.customer=c.cid AND oi.“order” = o.oid " \
+          f"GROUP BY o.oid, o.odate " \
+          f"ORDER BY o.odate DESC " \
+          f"LIMIT {count}"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_order_shipment(oid):
+    conn = _get_db_connection()
+    print("GETTING ORDER SHIPMENTS")
+    sql = f"SELECT o.oid, s.tn, s.shipper " \
+          f"FROM Orders o, Shipments s " \
+          f"WHERE o.oid = {oid} AND o.oid=s.shiporder"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_order_card(oid):
+    conn = _get_db_connection()
+    print("GETTING ORDER SHIPMENTS")
+    sql = f"SELECT o.oid, c.number, c.owner, c.expiration, c.cvv " \
+          f"FROM Orders o, Cards c " \
+          f"WHERE o.oid = {oid} AND o.card=c.number"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_order_address(oid):
+    conn = _get_db_connection()
+    print("GETTING ORDER ADDRESS")
+    sql = f"SELECT o.oid, a.street_address, a.city, a.state, a.zip " \
+          f"FROM Orders o, Addresses a " \
+          f"WHERE o.oid = {oid} AND o.address=a.aid"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_order_items(oid):
+    conn = _get_db_connection()
+    print("GETTING ORDER ITEMS")
+    sql = f"SELECT o.oid, i.quantity, i.product, i.vendor, p.name AS product_name, v.name AS vendor_name " \
+          f"FROM orders o, itemorders i, products p, vendors v " \
+          f"WHERE o.oid = {oid} AND o.oid = i.“order” AND i.product = p.pid AND i.vendor = v.vid"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_most_ordered_items(count):
+    conn = _get_db_connection()
+    print("GETTING MOST POPULAR ORDERS")
+    sql = f"SELECT pid, name, SUM(itemorders.quantity) AS amount " \
+          f"FROM products, itemorders " \
+          f"WHERE products.pid = itemorders.product " \
+          f"GROUP BY products.pid " \
+          f"ORDER BY amount DESC " \
+          f"LIMIT {count}"
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_most_popular_vendors(count):
+    conn = _get_db_connection()
+    print("GETTING MOST POPULAR VENDORS")
+    sql = f"SELECT v.vid, v.name, COUNT(v.name) AS num_purchases " \
+          f"FROM Vendors v, Sells s, Itemorders i " \
+          f"WHERE v.vid = s.vendor AND i.product = s.product AND i.vendor = s.vendor " \
+          f"GROUP BY v.vid " \
+          f"ORDER BY num_purchases DESC " \
+          f"LIMIT {count}"
+
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
+
+def get_most_liked_items(count):
+    conn = _get_db_connection()
+    print("GETTING MOST LIKED ITEMS")
+    sql = f"SELECT p.pid, p.name, COUNT(p.pid) AS amount " \
+          f"FROM products p, cartadds c " \
+          f"WHERE p.pid = c.product " \
+          f"GROUP BY p.pid " \
+          f"ORDER BY amount DESC " \
           f"LIMIT {count}"
     cursor = conn.execute(text(sql))
     res = cursor.fetchall()

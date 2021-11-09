@@ -71,7 +71,7 @@ def login():
     return redirect("http://localhost:4200")'''
 
 
-@app.route('/users', methods=["GET", "POST"])
+@app.route('/users', methods=["GET", "PUT"])
 def get_users():
     # customers
     try:
@@ -80,7 +80,7 @@ def get_users():
             res = UserResource.get_by_template({})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
-        elif input.method == "POST":
+        elif input.method == "PUT":
             data = input.data
             res = UserResource.add_by_template(data)
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
@@ -95,16 +95,15 @@ def get_users():
     return rsp
 
 
-@app.route('/users/<userID>', methods=["GET", "PUT", "DELETE"])
+@app.route('/users/<userID>', methods=["GET", "POST", "DELETE"])
 def get_users_by_userID(userID):
-    print(userID)
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
             res = UserResource.get_by_template({'cid': userID})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
-        elif input.method == "PUT":
+        elif input.method == "POST":
             data = input.data
             res = UserResource.update_by_template(data, {'cid': userID})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
@@ -122,7 +121,7 @@ def get_users_by_userID(userID):
 
     return rsp
 
-@app.route('/products', methods=["GET", "POST"])
+@app.route('/products', methods=["GET", "PUT"])
 def get_products():
     try:
         input = rest_utils.RESTContext(request)
@@ -131,7 +130,7 @@ def get_products():
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
             print(rsp)
 
-        elif input.method == "POST":
+        elif input.method == "PUT":
             data = input.data
             res = ProductResource.add_by_template(data)
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
@@ -145,7 +144,7 @@ def get_products():
 
     return rsp
 
-@app.route('/products/<pid>', methods=["GET", "PUT", "DELETE"])
+@app.route('/products/<pid>', methods=["GET", "POST", "DELETE"])
 def get_product_by_pid(pid):
     try:
         input = rest_utils.RESTContext(request)
@@ -153,7 +152,7 @@ def get_product_by_pid(pid):
             res = ProductResource.get_by_template({'pid': pid})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
-        elif input.method == "PUT":
+        elif input.method == "POST":
             data = input.data
             res = ProductResource.update_by_template(data, {'pid': pid})
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")

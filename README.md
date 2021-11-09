@@ -6,7 +6,7 @@
 
 ## Postgres DB
 - Account: bs3363
-- URI: postgresql://bs3363:cs4111_fall_2021!@35.196.73.133/proj1part2
+- URI: postgresql://bs3363:<password>@35.196.73.133/proj1part2
 
 ## Deployed URL
 - URL: TODO

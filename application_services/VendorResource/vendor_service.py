@@ -36,3 +36,9 @@ class VendorResource(BaseApplicationResource):
     def get_products(cls, vid):
         res = d_service.get_vendor_products(vid)
         return res
+
+
+    @classmethod
+    def get_by_prefix(cls, prefix, column = 'name'):
+        res = d_service.get_by_prefix("bs3363", "vendors", column, prefix)
+        return res

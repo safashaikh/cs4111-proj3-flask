@@ -13,8 +13,8 @@ class UserResource(BaseApplicationResource):
         return users #new_users
 
     @classmethod
-    def get_by_prefix(cls, prefix):
-        res = d_service.get_by_prefix("bs3363", "customers", "username", prefix)
+    def get_by_prefix(cls, prefix, column = 'name'):
+        res = d_service.get_by_prefix("bs3363", "customers", column, prefix)
         return res
 
     @classmethod
@@ -36,8 +36,8 @@ class UserResource(BaseApplicationResource):
         return res
 
     @classmethod
-    def get_orders(cls, cid, count):
-        res = d_service.get_user_orders(cid, count)
+    def get_orders(cls, cid, count, like):
+        res = d_service.get_user_orders(cid, count, like)
         return res
 
     @classmethod

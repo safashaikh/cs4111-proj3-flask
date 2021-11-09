@@ -77,8 +77,13 @@ def get_users():
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = UserResource.get_by_template({})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+            name = request.args.get('name')
+            if not name:
+                res = UserResource.get_by_template({})
+                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+            else:
+                res = UserResource.get_by_prefix(name)
+                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "PUT":
             data = input.data
@@ -126,9 +131,13 @@ def get_products():
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = ProductResource.get_by_template({})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-            print(rsp)
+            name = request.args.get('name')
+            if not name:
+                res = ProductResource.get_by_template({})
+                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+            else:
+                res = ProductResource.get_by_prefix(name)
+                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         elif input.method == "PUT":
             data = input.data
@@ -192,10 +201,13 @@ def get_vendors():
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
-            res = VendorResource.get_by_template({})
-            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-            print(rsp)
-
+            name = request.args.get('name')
+            if not name:
+                res = VendorResource.get_by_template({})
+                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+            else:
+                res = VendorResource.get_by_prefix(name)
+                rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
         else:
             rsp = Response("Method not implemented", status=501)
 
@@ -229,10 +241,13 @@ def get_user_order(cid):
     try:
         input = rest_utils.RESTContext(request)
         if input.method == "GET":
+            oid = request.args.get('oid')
             count = request.args.get('count')
             if not count:
                 count = 10
-            res = UserResource.get_orders(cid, count)
+            if not oid:
+                oid = ""
+            res = UserResource.get_orders(cid, count, oid)
             rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
         else:

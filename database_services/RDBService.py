@@ -62,7 +62,6 @@ def _get_where_clause_args(template):
     else:
         for k, v in template.items():
             terms.append(f'{k}={v}')
-            #args.append(v)
 
         clause = " where " + " AND ".join(terms)
 

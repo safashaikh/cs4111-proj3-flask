@@ -34,10 +34,9 @@ def _to_dict(keys, data):
 def get_by_prefix(db_schema, table_name, column_name, value_prefix):
 
     conn = _get_db_connection()
-    #cur = conn.cursor()
 
     sql = "select * from " + db_schema + "." + table_name + " where " + \
-          "LOWER( " + column_name + " )" + " like " + "'" + value_prefix + "%'"
+          "LOWER( " + column_name + " )" + " like " + "'" + value_prefix.lower() + "%'"
     print("SQL Statement = " + sql)
 
     cursor = conn.execute(text(sql))

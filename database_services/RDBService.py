@@ -232,6 +232,29 @@ def get_orders(count, like):
 
     return _to_dict(keys, res)
 
+def get_order(oid):
+    conn = _get_db_connection()
+    print("GETTING ORDERS")
+    sql = f"WITH order_items AS (" \
+            f"SELECT i.“order”, i.quantity, p.name, s.price, s.price * i.quantity AS item_total " \
+            f"FROM itemorders i, sells s, products p " \
+            f"WHERE i.product = s.product AND i.vendor=s.vendor AND i.product = p.pid) " \
+          f"SELECT o.oid, o.odate, o.discount, o.tax, SUM(oi.item_total) AS subtotal, (1.0 + o.tax) * (SUM(oi.item_total)  * (1.0-o.discount)) AS total, " \
+          f"o.card, s.shipper, s.tn, a.street_address, a.city, a.state, a.zip, c.name as customer " \
+          f"FROM Customers c, Orders o, order_items oi, shipments s, addresses a " \
+          f"WHERE o.customer=c.cid AND oi.“order” = o.oid AND o.oid = s.shiporder AND o.address = a.aid " \
+          f"AND o.oid = {oid} " \
+          f"GROUP BY o.oid, o.odate, a.aid, s.tn, c.name " \
+          f"ORDER BY o.odate DESC " 
+    cursor = conn.execute(text(sql))
+    res = cursor.fetchall()
+    keys = cursor.keys()
+    keys = list(keys)
+
+    conn.close()
+
+    return _to_dict(keys, res)
+
 
 def get_order_shipment(oid):
     conn = _get_db_connection()

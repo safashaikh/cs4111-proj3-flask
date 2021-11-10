@@ -288,6 +288,23 @@ def get_orders():
 
     return rsp
 
+@app.route('/orders/<oid>', methods=["GET", "POST", "DELETE"])
+def get_order_by_oid(oid):
+    try:
+        input = rest_utils.RESTContext(request)
+        if input.method == "GET":
+            res = OrderResource.get_order(oid)
+            rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+        else:
+            rsp = Response("Method not implemented", status=501)
+
+    except Exception as e:
+        print(f"Path: '/orders/<oid>', Error: {e}")
+        rsp = Response("INTERNAL ERROR", status=500, content_type="text/plain")
+
+    return rsp
+
 @app.route('/orders/<oid>/shipment', methods=["GET"])
 def get_order_shipment(oid):
     try:

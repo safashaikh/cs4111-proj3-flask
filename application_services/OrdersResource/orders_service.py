@@ -23,6 +23,11 @@ class OrderResource(BaseApplicationResource):
         return res
 
     @classmethod
+    def get_order(cls, oid):
+        res = d_service.get_order(oid)
+        return res
+
+    @classmethod
     def add_by_template(cls, template):
         res = d_service.add_by_template("bs3363", "orders", template)
         return res

@@ -284,9 +284,10 @@ def get_order_address(oid):
 def get_order_items(oid):
     conn = _get_db_connection()
     print("GETTING ORDER ITEMS")
-    sql = f"SELECT o.oid, i.quantity, i.product, i.vendor, p.name AS product_name, v.name AS vendor_name " \
-          f"FROM orders o, itemorders i, products p, vendors v " \
-          f"WHERE o.oid = {oid} AND o.oid = i.“order” AND i.product = p.pid AND i.vendor = v.vid"
+    sql = f"SELECT o.oid, i.quantity, i.product, i.vendor, p.name AS product_name, v.name AS vendor_name, s.price" \
+          f"FROM orders o, itemorders i, products p, vendors v, sells s " \
+          f"WHERE o.oid = {oid} AND o.oid = i.“order” AND i.product = p.pid AND i.vendor = v.vid " \
+          f"AND s.product=p.pid AND s.vendor=v.vid"
     cursor = conn.execute(text(sql))
     res = cursor.fetchall()
     keys = cursor.keys()

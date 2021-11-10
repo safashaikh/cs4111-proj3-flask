@@ -17,12 +17,19 @@ for users to view the E-Commerce system. Think of it as an admin portal for user
 E-Commerce activity. 
 
 Some of the features implemented:
- - Users can view their personal details and update them as well.
- - Users can view their orders and details such as total paid, taxes, etc.
- - Users can view the items associated with each order
- - Users can view where their orders will be shipped to and by whom
- - Users can view what credit card was used to pay for the order
- - Users can view what products are available and search by vendor
+ - Customer details page 
+     - Users can view their personal details and update them as well. 
+     - Users can view their orders and details such as total paid, taxes, etc. (Customers tab --> click on customer --> their orders listed on bottom)
+     - Users can view the items associated with each order (click on Order ID to see order details)
+ Order Details
+     - Users can view where their orders will be shipped to and by whom (Vendor and price listed for each product)
+     - Users can view what credit card was used to pay for the order 
+ - Users can view what products are available and search by vendor 
+     - Products tab to see all products, can search by name
+     - Vendors tab to see vendors, clicking on a vendor shows what products they sell
+ - Search Bars and Page Limits
+     - Search Bars indicate what you can search by
+     - Page limits use LIMIT in queries on the backend, so entering a number will increase or decrease the number of items you see on the page
  - We provide some relevant metrics about the E-commerce system as well
     - Vendor most purchased from
     - Most frequently bought product

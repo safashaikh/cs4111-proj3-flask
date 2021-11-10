@@ -210,17 +210,17 @@ def get_user_orders(cid, count, like):
 
 def get_orders(count, like):
     conn = _get_db_connection()
-    print("GETTING USER ORDERS")
+    print("GETTING ORDERS")
     sql = f"WITH order_items AS (" \
           f"SELECT i.“order”, i.quantity, p.name, s.price, s.price * i.quantity AS item_total " \
           f"FROM itemorders i, sells s, products p " \
           f"WHERE i.product = s.product AND i.vendor=s.vendor AND i.product = p.pid) " \
           f"SELECT o.oid, o.odate, o.discount, o.tax, SUM(oi.item_total) AS subtotal, (1.0 + o.tax) * (SUM(oi.item_total)  * (1.0-o.discount)) AS total, " \
-          f"o.card, s.shipper, s.tn, a.street_address, a.city, a.state, a.zip " \
+          f"o.card, s.shipper, s.tn, a.street_address, a.city, a.state, a.zip, c.name as customer " \
           f"FROM Customers c, Orders o, order_items oi, shipments s, addresses a " \
           f"WHERE o.customer=c.cid AND oi.“order” = o.oid AND o.oid = s.shiporder AND o.address = a.aid " \
           f"AND CAST( o.oid AS TEXT ) LIKE '{like}%' " \
-          f"GROUP BY o.oid, o.odate, s.tn, a.aid " \
+          f"GROUP BY o.oid, o.odate, s.tn, a.aid, c.name " \
           f"ORDER BY o.odate DESC " \
           f"LIMIT {count}"
     cursor = conn.execute(text(sql))
@@ -284,7 +284,7 @@ def get_order_address(oid):
 def get_order_items(oid):
     conn = _get_db_connection()
     print("GETTING ORDER ITEMS")
-    sql = f"SELECT o.oid, i.quantity, i.product, i.vendor, p.name AS product_name, v.name AS vendor_name, s.price" \
+    sql = f"SELECT o.oid, i.quantity, i.product, i.vendor, p.name AS product_name, v.name AS vendor_name, s.price " \
           f"FROM orders o, itemorders i, products p, vendors v, sells s " \
           f"WHERE o.oid = {oid} AND o.oid = i.“order” AND i.product = p.pid AND i.vendor = v.vid " \
           f"AND s.product=p.pid AND s.vendor=v.vid"
